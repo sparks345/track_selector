@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">wavetrack</string>
+    <string name="seek_span_text">%ds</string>
+</resources>
