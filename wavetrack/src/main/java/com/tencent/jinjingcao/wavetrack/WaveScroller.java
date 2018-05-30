@@ -268,7 +268,7 @@ public class WaveScroller extends View {
     }
 
     private ConcurrentLinkedQueue<Wave> getCurrentPageData(int index) {
-        int pageMax = Math.min(data.size(), sPAGE_MAX_COUNT);
+        int pageMax = Math.min(data.size(), sPAGE_MAX_COUNT + 1);
         int lastPageIndex = data.size() - pageMax;
 
         if (index < 0) index = 0;

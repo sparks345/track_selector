@@ -178,9 +178,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     }
 
     protected void initOption() {
-
         ViewGroup.LayoutParams lp = mSeekSpan.getLayoutParams();
-//                        lp.width = (int) (mDefaultOptionTime / MAX_TIME_SELECTED * mWaveScroller.getWidth());
         long time = mDefaultOptionTime;
         if (mWaveScroller.mDuration > 0) {
             time = Math.min(mWaveScroller.mDuration, mDefaultOptionTime);
