@@ -1,6 +1,7 @@
 package com.tencent.jinjingcao.wavetrack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import android.content.Context;
@@ -34,6 +35,8 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
     private ThumbFetchListener mFetchListener;
 
     private CopyOnWriteArrayList<Long> mCachedTimeStampList = new CopyOnWriteArrayList<Long>();
+    private HashMap<Long, Boolean> xxxx = new HashMap<>();
+    private int cachedSize = 0;
 
     public static final int MAX_CACHED_SIZE = 24;
 
@@ -54,8 +57,13 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
         mFetchHandler = new Handler(mFetchHandlerThread.getLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                long ts = (long) msg.obj;
-                TrackSelectorThumb.this.actionFetch(ts, -1);
+                switch (msg.what) {
+                    case MSG_DO_FETCH_THUMB: {
+                        long ts = (long) msg.obj;
+                        TrackSelectorThumb.this.actionFetch(ts, -1);
+                    }
+                    break;
+                }
             }
         };
     }
@@ -117,32 +125,8 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
     public void onFetchBack(long timeStamp, int index, Bitmap bitmap) {
         Log.d(TAG, "onFetchBack() called with: timeStamp = [" + timeStamp + "], index = [" + index + "], bitmap = [" + bitmap + "]");
         ((ThumbScroller) mWaveScroller).onFetchBack(timeStamp, index, bitmap);
+
         postInvalidate();
-
-        int idx = mCachedTimeStampList.indexOf(timeStamp);
-        if (idx > -1) {
-            // remove same one.
-            mCachedTimeStampList.remove(idx);
-            Log.w(TAG, "onFetchBack.remove:" + timeStamp);
-        }
-
-        // add to queue head.
-        mCachedTimeStampList.add(timeStamp);
-        Log.w(TAG, "onFetchBack.add:" + timeStamp);
-
-        // remove out of max cache size.
-        while (mCachedTimeStampList.size() > MAX_CACHED_SIZE) {
-            Long oldTimeStamp = mCachedTimeStampList.remove(0);
-            ArrayList<Thumb> dt = ((ThumbScroller) mWaveScroller).data;
-            for (Thumb dd : dt) {
-                if (dd.timeStamp == oldTimeStamp) {
-                    Log.w(TAG, "onFetchBack.recycle bitmap." + oldTimeStamp);
-                    dd.bitmap.recycle();
-                    dd.bitmap = null;
-                    break;
-                }
-            }
-        }
     }
 
     public void setThumbFetchListener(ThumbFetchListener listener) {
@@ -156,6 +140,28 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
         Message msg = mFetchHandler.obtainMessage(MSG_DO_FETCH_THUMB);
         msg.obj = timeStamp;
         mFetchHandler.sendMessage(msg);
+
+        int idx = mCachedTimeStampList.indexOf(timeStamp);
+        if (idx > -1) {
+            Log.w(TAG, "doFetch.remove." + timeStamp);
+            mCachedTimeStampList.remove(idx);
+        }
+        // move to queue end
+        mCachedTimeStampList.add(timeStamp);
+
+        // remove out of max cache size.
+        while (mCachedTimeStampList.size() > MAX_CACHED_SIZE) {
+            Long oldTimeStamp = mCachedTimeStampList.remove(0);
+            ArrayList<Thumb> dt = ((ThumbScroller) mWaveScroller).data;
+            for (Thumb dd : dt) {
+                if (dd.timeStamp == oldTimeStamp) {
+                    Log.w(TAG, "doFetch.recycle bitmap." + oldTimeStamp);
+                    dd.bitmap.recycle();
+                    dd.bitmap = null;
+                    break;
+                }
+            }
+        }
     }
 
     public void actionFetch(long ts, int i) {
@@ -176,4 +182,5 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
         mFetchHandlerThread.quit();
         Log.i(TAG, "onDetachedFromWindow. Tidy threadHandler.");
     }
+
 }

@@ -223,10 +223,12 @@ public class ThumbScroller extends WaveScroller {
             return;
         }
 
+        // find the nearest bitmap
         for (Thumb dt : data) {
             if (timeStamp >= dt.timeStamp && timeStamp < dt.timeStamp + mTimePerWave) {
                 dt.setBitmap(bitmap);
-                Log.i(TAG, "onFetchBack, setBitmap data.");
+                Log.i(TAG, "onFetchBack, setBitmap data." + dt.timeStamp);
+                postInvalidate();
                 break;
             }
         }

@@ -35,6 +35,8 @@ public class WaveScroller extends View {
      */
     private static final int SCROLLING_VELOCITY_UNIT = 100;
 
+    private static final float MIN_MOVE_DISTANCE = 20;
+
     /**
      * px per seconds (max 30 sec.) it will adjust after init view.
      *
@@ -116,6 +118,12 @@ public class WaveScroller extends View {
     private Paint mBitPaint;
 
     private boolean mIgnoreCallBack;
+
+    protected int mDragDirection;
+
+    static final int Direction_UNKNOWN = 0;
+    static final int Direction_RIGHT = 2;
+    static final int Direction_LEFT = 1;
 
     public WaveScroller(Context context) {
         this(context, null);
@@ -362,8 +370,16 @@ public class WaveScroller extends View {
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                mCurrentLeft -= event.getX() - mLastX;// 反向滚动
+                float moveDiff = event.getX() - mLastX;
+                mCurrentLeft -= moveDiff;// 反向滚动
                 mLastX = event.getX();
+                if (moveDiff > MIN_MOVE_DISTANCE) {
+                    mDragDirection = Direction_RIGHT;
+                } else if (moveDiff < -MIN_MOVE_DISTANCE) {
+                    mDragDirection = Direction_LEFT;
+                } else {
+                    mDuration = Direction_UNKNOWN;
+                }
                 clearHighlight();
                 callbackScrolling();
                 break;
