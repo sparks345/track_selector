@@ -316,7 +316,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         if (!mWaveScroller.isDragging() && touchX > mSeekOption.getX() && touchX < mSeekOption.getX() + mSeekOption.getWidth()) {
             if (touchX > mSeekOption.getX() + mSeekOption.getRight() - mRightArrow.getWidth()) {
                 return true;
-            } else if (touchX < mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed) {
+            } else if (touchX < mSeekOption.getX() + mLeftArrow.getWidth()/* + mMarginFixed*/) {
                 return true;
             }
             return super.onInterceptTouchEvent(ev);
@@ -345,7 +345,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
 
                     mWaveScroller.drawBorder(true);
                     mWaveScroller.clearHighlight();
-                } else if (mLastX < mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed) {
+                } else if (mLastX < mSeekOption.getX() + mLeftArrow.getWidth()/* + mMarginFixed*/) {
                     mIsDragLeftArrow = true;
                     mLastLeft = mSeekOption.getX();
                     mLastWidth = mSeekSpan.getWidth();
@@ -372,7 +372,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
                     ViewGroup.LayoutParams lp = mSeekSpan.getLayoutParams();
                     float offsetX = nLastX - mLastX;
                     float rPos = mLastLeft + offsetX;
-                    if (mLastWidth + mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed + mRightArrow.getWidth() + offsetX <= getWidth()
+                    if (mLastWidth + mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed + mRightArrow.getWidth() + mMarginFixed + offsetX <= getWidth()
                             && mLastWidth + offsetX >= getMinSelectWidth(getMinTimeSelected())) {
                         int tmpRight = ((int) (mLastWidth + offsetX));
                         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
@@ -423,6 +423,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
                 mIsDragOption = false;
 
                 syncSelectedAndStartHighLight(false);
+                mWaveScroller.startHighLight(mPreLeft, mPreRight);
                 mWaveScroller.drawBorder(false);
                 callbackSelected(mPreLeft, mPreRight);
 
@@ -550,6 +551,10 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         mSeekOption.getGlobalVisibleRect(rect);
     }
 
+    public void clearHighlight() {
+        mWaveScroller.clearHighlight();
+    }
+
     private void callbackSelecting(float preLeft, float preRight) {
         Log.d(TAG, "callbackSelecting() called with: preLeft = [" + preLeft + "], preRight = [" + preRight + "]");
         if (mSelectorListener != null) {
@@ -673,12 +678,13 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
                     TrackSelectorWave selector = mTrackSelector.get();
                     if (selector != null) {
                         // play music.
-
+                        float preLeftNow = selector.mSeekOption.getX() + selector.mLeftArrow.getWidth() + selector.mMarginFixed;
+                        float preRightNow = selector.mPreLeft + selector.mSeekSpanText.getWidth();
                         // invoke start highlight.
-                        selector.mWaveScroller.startHighLight(preLeft, preRight);
+                        selector.mWaveScroller.startHighLight(preLeftNow, preRightNow);
 //                        if (selector.mSelectorListener != null) {
 //                        selector.callbackSelected(preLeft, preRight);
-                        selector.callbackSelecting(preLeft, preRight);
+                        selector.callbackSelecting(preLeftNow, preRightNow);
 //                            long pageStart = Math.round(selector.mWaveScroller.getPageStartTime() / 1000.0F);
 //                            int offset = selector.mWaveScroller.getPaddingLeft();
 //                            selector.mSelectorListener.onSelectChanging(pageStart + selector.getWaveTS(preLeft - offset), pageStart + selector.getWaveTS(preRight - offset));

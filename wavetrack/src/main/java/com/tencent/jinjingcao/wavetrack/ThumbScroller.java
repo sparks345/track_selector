@@ -97,7 +97,7 @@ public class ThumbScroller extends WaveScroller {
         mLastAvailableLeft = startingLeft;
         int offset = (int) ((startingLeft/* + mLeftPadding*/) % mWaveWidth);// offset for image, like case bitmap draw a half.
 
-        Log.e(TAG, "MMMM:" + mCurrentLeft + ", offset: " + offset + ", mStartIndex:" + mStartIndex);
+//        Log.e(TAG, "MMMM:" + mCurrentLeft + ", offset: " + offset + ", mStartIndex:" + mStartIndex);
 
         ConcurrentLinkedQueue<Thumb> careData = getCurrentPageData(mStartIndex);
         Iterator<Thumb> it = careData.iterator();

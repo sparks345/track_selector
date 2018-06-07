@@ -264,7 +264,7 @@ public class WaveScroller extends View {
             float bottom = mRealHeight / 2 + height / 2;
             float corner = mWaveWidth / 5 * 3 / 2;
             rect.set(left, top, right, bottom);
-            if (left >= mHighLightStartPos - mWaveWidth / 2 && right <= mHighLightProgressPos + mWaveWidth / 2) {
+            if (left >= mHighLightStartPos - mWaveWidth && right <= mHighLightProgressPos + mWaveWidth) {
                 canvas.drawRoundRect(rect, corner, corner, mWavePlayingPaint);
             } else if (left >= mHighLightProgressPos && right <= mHighLightEndPos) {
                 canvas.drawRoundRect(rect, corner, corner, mWavePlayingBackPaint);
@@ -496,9 +496,10 @@ public class WaveScroller extends View {
     }
 
     protected void clearHighlight() {
-        mHighLightEndPos = 0;
-        mHighLightStartPos = 0;
-        mHighLightProgressPos = 0;
+//        mHighLightEndPos = 0;
+//        mHighLightStartPos = 0;
+//        mHighLightProgressPos = 0;
+        mHighLightProgressPos = mHighLightStartPos;
 
         stopHighlight();
     }
@@ -536,7 +537,8 @@ public class WaveScroller extends View {
         int pageStartPix = (int) Util.getPixByTs(pageStartTs - mLimitStartTime, getPixPerSecond());
 //        pageStartPix += mLeftPadding;
         mIgnoreCallBack = true;
-        mScroll.startScroll(mScroll.getCurrX(), 0, pageStartPix - mScroll.getCurrX(), 0, 0);
+//        mScroll.startScroll(mScroll.getCurrX(), 0, pageStartPix - mScroll.getCurrX(), 0, 0);
+        mScroll.setFinalX(pageStartPix - mScroll.getCurrX());
         postInvalidate();
     }
 
