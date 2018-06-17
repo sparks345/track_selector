@@ -567,10 +567,10 @@ public class WaveScroller extends View {
         return pageStartTs;
     }
 
-    public long getPageStartTime() {
+    public float getPageStartTime() {
         Log.d(TAG, "getPageStartTime() called." + mScroll.getCurrX() + "..." + mCurrentLeft);
 //        return Util.getTsByPix(mScroll.getCurrX()/* - mLeftPadding*/, getPixPerSecond());
-        return Util.getTsByPix(mCurrentLeft/* - mLeftPadding*/, getPixPerSecond()) + mLimitStartTime;
+        return Util.getTsFloatByPix(mCurrentLeft/* - mLeftPadding*/, getPixPerSecond()) + mLimitStartTime;
     }
 
     public int getPixPerSecond() {

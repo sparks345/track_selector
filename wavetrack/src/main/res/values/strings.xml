@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">wavetrack</string>
     <string name="seek_span_text">%ds</string>
+    <string name="seek_span_text_float">%.1fs</string>
 </resources>

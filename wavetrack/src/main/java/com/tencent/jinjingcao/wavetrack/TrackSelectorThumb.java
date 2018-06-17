@@ -122,6 +122,19 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
 //        mWaveScroller.initScroller();
     }
 
+    @Override
+    protected float getSuitedMarginFixed() {
+        return mMarginFixed;
+    }
+
+    @Override
+    protected void fillSelectedTimeSpan() {
+        float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
+        float preRight = preLeft + mSeekSpanText.getWidth() + mMarginFixed;
+        float pos = Util.getTsFloatByPix((preRight - preLeft) / 1000.0F, mWaveScroller.getPixPerSecond());
+        mSeekSpanText.setText(String.format(getContext().getString(R.string.seek_span_text_float), pos));
+    }
+
     public void onFetchBack(long timeStamp, int index, Bitmap bitmap) {
         Log.d(TAG, "onFetchBack() called with: timeStamp = [" + timeStamp + "], index = [" + index + "], bitmap = [" + bitmap + "]");
         ((ThumbScroller) mWaveScroller).onFetchBack(timeStamp, index, bitmap);

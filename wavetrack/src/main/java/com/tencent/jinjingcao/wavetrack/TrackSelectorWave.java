@@ -81,6 +81,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
 
     private long mDefaultOptionTime = MAX_TIME_SELECTED;
     protected float mMarginFixed = 0;
+    private int MAX_TIME_SELECTED_PIX;
 
     public TrackSelectorWave(Context context) {
         this(context, null);
@@ -183,7 +184,8 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         if (mWaveScroller.mDuration > 0) {
             time = Math.min(mWaveScroller.mDuration, mDefaultOptionTime);
         }
-        lp.width = (int) Util.getPixByTs(time, mWaveScroller.getPixPerSecond());
+        lp.width = (int) (Util.getPixByTs(time, mWaveScroller.getPixPerSecond()) - mMarginFixed);
+        MAX_TIME_SELECTED_PIX = lp.width;
         mSeekSpan.setLayoutParams(lp);
 
         int center = (TrackSelectorWave.this.getWidth() - mWaveScroller.mLeftPadding - mWaveScroller.mRightPadding - lp.width) / 2;
@@ -341,14 +343,14 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
 
                 if (mLastX > mSeekOption.getX() + mSeekOption.getRight() - mRightArrow.getWidth()) {
                     mIsDragRightArrow = true;
-                    mLastWidth = mSeekSpan.getWidth();
+                    mLastWidth = MAX_TIME_SELECTED_PIX > 0 ? Math.min(mSeekSpan.getWidth(), MAX_TIME_SELECTED_PIX) : mSeekSpan.getWidth();
 
                     mWaveScroller.drawBorder(true);
                     mWaveScroller.clearHighlight();
                 } else if (mLastX < mSeekOption.getX() + mLeftArrow.getWidth()/* + mMarginFixed*/) {
                     mIsDragLeftArrow = true;
                     mLastLeft = mSeekOption.getX();
-                    mLastWidth = mSeekSpan.getWidth();
+                    mLastWidth = MAX_TIME_SELECTED_PIX > 0 ? Math.min(mSeekSpan.getWidth(), MAX_TIME_SELECTED_PIX) : mSeekSpan.getWidth();
 
                     mWaveScroller.drawBorder(true);
                     mWaveScroller.clearHighlight();
@@ -372,12 +374,12 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
                     ViewGroup.LayoutParams lp = mSeekSpan.getLayoutParams();
                     float offsetX = nLastX - mLastX;
                     float rPos = mLastLeft + offsetX;
-                    if (mLastWidth + mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed + mRightArrow.getWidth() + mMarginFixed + offsetX <= getWidth()
+                    if (mLastWidth + mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed + mRightArrow.getWidth() + mMarginFixed + offsetX <= getWidth() + getSuitedMarginFixed()
                             && mLastWidth + offsetX >= getMinSelectWidth(getMinTimeSelected())) {
-                        int tmpRight = ((int) (mLastWidth + offsetX));
+                        int tmpRight = Math.min((int) (mLastWidth + offsetX), MAX_TIME_SELECTED_PIX);
                         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-                        float preRight = preLeft + mSeekSpanText.getWidth();
-                        if (mLimitEndTime <= 0 || (Util.getTsByPix((long) preRight, mWaveScroller.getPixPerSecond()) + mWaveScroller.getPageStartTime() <= mLimitEndTime)) {
+                        float preRight = preLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
+                        if (mLimitEndTime <= 0 || (Util.getTsFloatByPix((long) preRight, mWaveScroller.getPixPerSecond()) + mWaveScroller.getPageStartTime() >= mLimitEndTime)) {
                             lp.width = tmpRight;
                             mSeekSpan.setLayoutParams(lp);
                             mWaveScroller.clearHighlight();
@@ -389,11 +391,11 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
                     xPos = (float) Math.ceil(mLastLeft + offsetX);// avoid space between array and option text.
                     if (xPos > 0 && (mLastWidth - offsetX) >= getMinSelectWidth(getMinTimeSelected())) {
                         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-                        if (mLimitStartTime <= 0 || (Util.getTsByPix((long) preLeft, mWaveScroller.getPixPerSecond()) + mWaveScroller.getPageStartTime() >= mLimitStartTime)) {
+                        if (mLimitStartTime <= 0 || (Util.getTsFloatByPix((long) preLeft, mWaveScroller.getPixPerSecond()) + mWaveScroller.getPageStartTime() >= mLimitStartTime)) {
                             mSeekOption.setX(xPos);
 
                             ViewGroup.LayoutParams lp = mSeekSpan.getLayoutParams();
-                            lp.width = ((int) (mLastWidth - offsetX));
+                            lp.width = Math.min((int) (mLastWidth - offsetX), MAX_TIME_SELECTED_PIX);
                             mSeekSpan.setLayoutParams(lp);
                             mWaveScroller.clearHighlight();
                             syncSelectedAndStartHighLight(true);
@@ -435,13 +437,17 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         return super.onTouchEvent(event);
     }
 
+    protected float getSuitedMarginFixed() {
+        return 0;
+    }
+
     private float getMinSelectWidth(long minTimeSelected) {
         return Util.getPixByTs(minTimeSelected, mWaveScroller.getPixPerSecond());
     }
 
     protected void fillSelectedTimeSpan() {
         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        float preRight = preLeft + mSeekSpanText.getWidth();
+        float preRight = preLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
         mSeekSpanText.setText(String.format(getContext().getString(R.string.seek_span_text), getWaveTS(preRight - preLeft)));
     }
 
@@ -492,8 +498,8 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
 //                syncSelectedAndStartHighLight();
                 fillSelectedTimeSpan();
                 mWaveScroller.clearHighlight();
-                mPreLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-                mPreRight = mPreLeft + mSeekSpanText.getWidth();
+                mPreLeft = mSeekOption.getX() + mLeftArrow.getWidth() + getSuitedMarginFixed();
+                mPreRight = mPreLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
                 mWaveScroller.startHighLight(mPreLeft, mPreRight);
             }
         }, 400);
@@ -515,8 +521,8 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     public void onScrollChanged(float pageStart, float pageEnd) {
         Log.v(TAG, "onScrollChanged() called with: pageStart = [" + pageStart + "], pageEnd = [" + pageEnd + "]");
 
-        float preLeft = /*pageStart +*/ mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        float preRight = preLeft + mSeekSpanText.getWidth();
+        float preLeft = /*pageStart +*/ mSeekOption.getX() + mLeftArrow.getWidth() + getSuitedMarginFixed();
+        float preRight = preLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
         callbackSelected(preLeft, preRight);
 
         syncSelectedAndStartHighLight(false);
@@ -526,8 +532,8 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     public void onScrollChanging(float pageStart, float pageEnd) {
         Log.i(TAG, "onScrollChanging() called with: pageStart = [" + pageStart + "], pageEnd = [" + pageEnd + "]");
 
-        float preLeft = /*pageStart +*/ mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        float preRight = preLeft + mSeekSpanText.getWidth();
+        float preLeft = /*pageStart +*/ mSeekOption.getX() + mLeftArrow.getWidth() + getSuitedMarginFixed();
+        float preRight = preLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
         callbackSelecting(preLeft, preRight);
 
         syncSelectedAndStartHighLight(false);
@@ -536,7 +542,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     public void syncSelectedAndStartHighLight(boolean immdeartely) {
         Log.d(TAG, "syncSelectedAndStartHighLight() called with: immdeartely = [" + immdeartely + "]");
         mPreLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        mPreRight = mPreLeft + mSeekSpanText.getWidth();
+        mPreRight = mPreLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
 
         postOnSelectChanged(mPreLeft, mPreRight, immdeartely);
 
@@ -628,7 +634,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         int offset = mWaveScroller.getPaddingLeft();
 
         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        float preRight = preLeft + mSeekSpanText.getWidth();
+        float preRight = preLeft + mSeekSpanText.getWidth() + getSuitedMarginFixed();
 
         return pageStart + Util.getTsByPix(preRight - offset, mWaveScroller.getPixPerSecond());
     }

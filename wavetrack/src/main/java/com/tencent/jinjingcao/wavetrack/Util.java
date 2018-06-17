@@ -21,16 +21,20 @@ public class Util {
      */
     private static final int DEFAULT_SAMPLE_RATE = 44100;
 
-//    public static final int mPIX_PER_SECOND = 100;//1s = 100px
+    //    public static final int mPIX_PER_SECOND = 100;//1s = 100px
     public static final int SECOND_TO_PIC_BYTE = 100;//1s = 100byte
 
 
     public static float getPixByTs(long ts, int SECOND_TO_PIX) {
-        return ((float) ts / 1000) * SECOND_TO_PIX;
+        return (ts / 1000.0f) * SECOND_TO_PIX;
     }
 
     public static long getTsByPix(float px, int SECOND_TO_PIX) {
-        return Math.round((px / SECOND_TO_PIX) * 1000);
+        return (long) Math.round((px / SECOND_TO_PIX) * 1000);
+    }
+
+    public static float getTsFloatByPix(float px, int SECOND_TO_PIX) {
+        return (px / SECOND_TO_PIX) * 1000;
     }
 
     public static float getByteSizeByTs(long bs) {
@@ -47,13 +51,13 @@ public class Util {
 
     private static int byteSizeToTimeMillis(int byteSize, int sampleRate, int channels, int bitDepth) {
         // 每个声道字节数
-        double byteSizePerChannel = ((double)byteSize) / channels;
+        double byteSizePerChannel = ((double) byteSize) / channels;
         // 每个声道采样数
         double samplePerChannel = byteSizePerChannel / bitDepth;
         // 时长，单位秒
         double duration = samplePerChannel / sampleRate;
         // 时长，单位毫秒
         double d = (duration * 1000);
-        return (int)d;
+        return (int) d;
     }
 }
