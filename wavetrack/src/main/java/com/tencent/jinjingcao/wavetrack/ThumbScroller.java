@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -15,6 +16,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 public class ThumbScroller extends WaveScroller {
@@ -25,6 +27,7 @@ public class ThumbScroller extends WaveScroller {
     ArrayList<Thumb> data = new ArrayList<>();
 
     private Paint mBitPaint;
+    private Paint mTextPaint;
     private Rect mRectSrc = new Rect();
 
     protected long mTimePerWave;
@@ -47,6 +50,10 @@ public class ThumbScroller extends WaveScroller {
 //        mBitPaint.setAntiAlias(true);
         mBitPaint.setDither(true);
         mBitPaint.setFilterBitmap(true);
+
+        mTextPaint = new Paint();
+        mTextPaint.setColor(Color.YELLOW);
+        mTextPaint.setTextSize(50);
     }
 
     @Override
@@ -63,7 +70,7 @@ public class ThumbScroller extends WaveScroller {
         Log.w(TAG, "fix wave width." + mWaveWidth);
 
         sWAVE_MAX_HEIGHT = mRealHeight - 4 * mDensity;
-        sPAGE_MAX_COUNT = (int) ((mRealWidth - mLeftPadding - mRightPadding) / mWaveWidth);
+        sPAGE_MAX_COUNT = (int) Math.ceil((mRealWidth - mLeftPadding - mRightPadding) / mWaveWidth);
 
 //        mRectSrc.right = mThumbWidth;//(int) mWaveWidth;
 //        mRectSrc.bottom = mThumbHeight;//mRealHeight;
@@ -105,7 +112,7 @@ public class ThumbScroller extends WaveScroller {
         while (it.hasNext()) {
             // draw.
             Thumb dt = it.next();
-            float left = index * mWaveWidth + mLeftPadding - offset;// keep left padding
+            float left = index * mWaveWidth + mLeftPadding - offset;// - 10 * mDensity;// keep left padding
 
             if (left > mRealWidth - mRightPadding) {// keep right padding
                 break;
@@ -129,7 +136,7 @@ public class ThumbScroller extends WaveScroller {
                 mRectSrc.left = 0;
             }
 
-            if (index == careData.size() - 1) {
+            if (index >= careData.size() - 2) {// first one may have viewable, the last one is size - 2.
 //                float lastPPP = mRealWidth - mLeftPadding - left;
                 right = Math.min(mRealWidth - mRightPadding, right);
                 float lastPPP = right - left;
@@ -143,8 +150,8 @@ public class ThumbScroller extends WaveScroller {
 //            left = Math.max(mLeftPadding, left);
 //            right = Math.min(mRealWidth - mRightPadding, right);
             rect.set(left, top, right, bottom);
-
             canvas.drawBitmap(tmp, mRectSrc, rect, mBitPaint);
+//            canvas.drawText(index+";", left, 50, mTextPaint);// for debug
 
             index++;
         }
@@ -175,12 +182,13 @@ public class ThumbScroller extends WaveScroller {
         if (tmp == null) {
             fetchListener.doFetch(thumb.timeStamp, -1);
             return ((BitmapDrawable) getResources().getDrawable(R.drawable.thumb_default)).getBitmap();
+//            return ((BitmapDrawable) getResources().getDrawable(R.drawable.test)).getBitmap();// for debug
         }
         return tmp;
     }
 
     private ConcurrentLinkedQueue<Thumb> getCurrentPageData(int index) {
-        int pageMax = Math.min(data.size(), sPAGE_MAX_COUNT + 1);// extra 1 for draw half bitmap.
+        int pageMax = Math.min(data.size(), sPAGE_MAX_COUNT + 1);// extra 1 for draw half bitmap of left and right.
         int lastPageIndex = data.size() - pageMax;
 
         if (index < 0) index = 0;

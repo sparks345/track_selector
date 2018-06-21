@@ -130,9 +130,10 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
     @Override
     protected void fillSelectedTimeSpan() {
         float preLeft = mSeekOption.getX() + mLeftArrow.getWidth() + mMarginFixed;
-        float preRight = preLeft + mSeekSpanText.getWidth() + mMarginFixed;
+        float preRight = preLeft + mSeekSpanText.getWidth();// + getSuitedMarginFixed();
         float pos = Util.getTsFloatByPix((preRight - preLeft) / 1000.0F, mWaveScroller.getPixPerSecond());
-        mSeekSpanText.setText(String.format(getContext().getString(R.string.seek_span_text_float), pos));
+//        mSeekSpanText.setText(String.format(getContext().getString(R.string.seek_span_text_float), pos));
+        mSeekSpanText.setText(String.format(getContext().getString(R.string.seek_span_text), Math.round(pos)));
     }
 
     public void onFetchBack(long timeStamp, int index, Bitmap bitmap) {
@@ -169,7 +170,9 @@ public class TrackSelectorThumb extends TrackSelectorWave implements ThumbFetchL
             for (Thumb dd : dt) {
                 if (dd.timeStamp == oldTimeStamp) {
                     Log.w(TAG, "doFetch.recycle bitmap." + oldTimeStamp);
-                    dd.bitmap.recycle();
+                    if (dd.bitmap != null) {
+                        dd.bitmap.recycle();
+                    }
                     dd.bitmap = null;
                     break;
                 }

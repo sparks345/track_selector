@@ -90,31 +90,31 @@ public class MainActivity extends AppCompatActivity implements SelectorListener 
 
         final String pcmPath = "/mnt/sdcard/Music/mic.pcm";
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mTrackerSelector.initData(pcmPath, 4000000);
-
-                mTrackerSelector.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mTrackerSelector.syncSelectedAndStartHighLight(false);
-                    }
-                });
-
-//                mTrackerSelector.setLimitTime(10000, 50000);
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                mTrackerSelector.initData(pcmPath, 4000000);
+//
+//                mTrackerSelector.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mTrackerSelector.syncSelectedAndStartHighLight(false);
+//                    }
+//                });
+//
+////                mTrackerSelector.setLimitTime(10000, 50000);
+//            }
+//        }).start();
 
 
         //////////////////////////////
-//        mTrackerSelectorThumb.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                mTrackerSelectorThumb.setSelectorListener(mListener);
-//                mTrackerSelectorThumb.initData(pcmPath, 40000);
-//            }
-//        }, 3000);
+        mTrackerSelectorThumb.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mTrackerSelectorThumb.setSelectorListener(mListener);
+                mTrackerSelectorThumb.initData(pcmPath, 40000);
+            }
+        }, 300);
 
     }
 
