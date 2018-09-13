@@ -70,7 +70,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
 
     private GestureDetector mDetector;
 
-    private SelectorListener mSelectorListener;
+    private WeakReference<SelectorListener> mSelectorListener;
 
     private float mPreLeft;
     private float mPreRight;
@@ -168,7 +168,10 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
         mWaveScroller.initScroller();
 
         if (mSelectorListener != null) {
-            mSelectorListener.onRender();
+            SelectorListener sLsn = mSelectorListener.get();
+            if (sLsn != null) {
+                sLsn.onRender();
+            }
         }
 
         mWaveScroller.postInvalidate();
@@ -512,7 +515,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     }
 
     public void setSelectorListener(SelectorListener listener) {
-        mSelectorListener = listener;
+        mSelectorListener = new WeakReference<>(listener);
     }
 
     /**
@@ -568,6 +571,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     private void callbackSelecting(float preLeft, float preRight) {
         Log.d(TAG, "callbackSelecting() called with: preLeft = [" + preLeft + "], preRight = [" + preRight + "]");
         if (mSelectorListener != null) {
+            SelectorListener sLsn = mSelectorListener.get();
             long pageStart = Math.round(mWaveScroller.getPageStartTime());
             int offset = mWaveScroller.getPaddingLeft();
             long tsStart = pageStart + Util.getTsByPix(preLeft - offset, mWaveScroller.getPixPerSecond());
@@ -580,7 +584,9 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
             } else if (tsEnd - tsStart < getMinTimeSelected()) {
                 tsEnd = tsStart + getMinTimeSelected();
             }
-            mSelectorListener.onSelectChanging(tsStart, tsEnd);
+            if (sLsn != null) {
+                sLsn.onSelectChanging(tsStart, tsEnd);
+            }
             /*mSelectorListener.onSelectChanging(
                     getTimeStart(),
                     getTimeEnd()
@@ -591,6 +597,7 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
     private void callbackSelected(float preLeft, float preRight) {
         Log.d(TAG, "callbackSelected() called with: preLeft = [" + preLeft + "], preRight = [" + preRight + "]");
         if (mSelectorListener != null) {
+            SelectorListener sLsn = mSelectorListener.get();
             long pageStart = Math.round(mWaveScroller.getPageStartTime());
             int offset = mWaveScroller.getPaddingLeft();
             long tsStart = pageStart + Util.getTsByPix(preLeft - offset, mWaveScroller.getPixPerSecond());
@@ -603,7 +610,9 @@ public class TrackSelectorWave extends RelativeLayout implements WaveScrollListe
             } else if (tsEnd - tsStart < getMinTimeSelected()) {
                 tsEnd = tsStart + getMinTimeSelected();
             }
-            mSelectorListener.onSelectChanged(tsStart, tsEnd);
+            if (sLsn != null) {
+                sLsn.onSelectChanged(tsStart, tsEnd);
+            }
 
 //            mSelectorListener.onSelectChanged(pageStart + getWaveTS(preLeft - offset), pageStart + getWaveTS(preRight - offset));
 /*            mSelectorListener.onSelectChanged(

@@ -1,5 +1,6 @@
 package com.tencent.jinjingcao.wavetrack;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,12 +33,13 @@ public class ThumbScroller extends WaveScroller {
 
     protected long mTimePerWave;
 
-    private ThumbFetchListener fetchListener = new ThumbFetchListener() {
+    private ThumbFetchListener tmpfetchListener = new ThumbFetchListener() {
         @Override
         public void doFetch(long timeStamp, int index) {
             Log.d(TAG, "doFetch() called with: timeStamp = [" + timeStamp + "], index = [" + index + "]");
         }
     };
+    private WeakReference<ThumbFetchListener> fetchListener = new WeakReference<>(tmpfetchListener);
 
     public ThumbScroller(Context context) {
         super(context);
@@ -180,7 +182,10 @@ public class ThumbScroller extends WaveScroller {
     private Bitmap getBitmap(Thumb thumb) {
         Bitmap tmp = thumb.getThumb();
         if (tmp == null) {
-            fetchListener.doFetch(thumb.timeStamp, -1);
+            ThumbFetchListener lsn = fetchListener.get();
+            if (lsn != null) {
+                lsn.doFetch(thumb.timeStamp, -1);
+            }
             return ((BitmapDrawable) getResources().getDrawable(R.drawable.thumb_default)).getBitmap();
 //            return ((BitmapDrawable) getResources().getDrawable(R.drawable.test)).getBitmap();// for debug
         }
@@ -243,7 +248,7 @@ public class ThumbScroller extends WaveScroller {
     }
 
     public void setThumbFetchListener(ThumbFetchListener listener) {
-        this.fetchListener = listener;
+        this.fetchListener = new WeakReference<>(listener);
     }
 
     public interface ThumbFetchListener {
