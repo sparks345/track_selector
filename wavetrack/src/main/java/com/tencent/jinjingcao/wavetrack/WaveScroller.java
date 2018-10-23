@@ -378,7 +378,7 @@ public class WaveScroller extends View {
                 } else if (moveDiff < -MIN_MOVE_DISTANCE) {
                     mDragDirection = Direction_LEFT;
                 } else {
-                    mDuration = Direction_UNKNOWN;
+                    mDragDirection = Direction_UNKNOWN;
                 }
                 clearHighlight();
                 callbackScrolling();
